@@ -1,41 +1,35 @@
-const express = require("express")
-const app = express()
-const uri ="mongodb+srv://dbUser:dbUser@cluster0.ce9ymf8.mongodb.net/?retryWrites=true&w=majority" 
-const {MongoClient} = require("mongodb-legacy")
-const ObjectId = require("mongodb-legacy").ObjectId
-
-//para conectar o nosso banco
+const express = require('express');
+//const { MongoClient } = require('mongodb');
+const app = express();
+const ObjectId = require('mongodb-legacy').ObjectId
+const {MongoClient}= require('mongodb-legacy')
+const uri = "mongodb+srv://dbUser:dbUser@cluster0.uucfqzh.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri);
 const db = client.db("teste-db");
-const collection = db.collection("crud");
-//mongodb+srv://dbUser:dbUser@cluster0.ce9ymf8.mongodb.net/?retryWrites=true&w=majority
+const collection = db.collection('crud');
 
-app.set("view engine", "ejs")
+
+ app.listen(3000, function(){
+    console.log('o nosso servidor esta rodando na porta 3000')
+ }) 
+
+app.get('/',(req, res)=>{
+    res.render('index.ejs')
+})
+app.set('view engine', 'ejs')
+
 app.use(express.urlencoded({extended:true}))
 
-app.listen(3000, function(){
-    console.log("o nosso servidor esta rodando na porta 3000")})
-
-app.get("/ler", (requisition, resposta)=> {
-    resposta.send("olá galera!")
-})
-
-app.get("/index", (req,res)=> {
-
-res.render("index.ejs")
-})
-
-app.post("/show", (req, res) => {
-    collection.insertOne(req.body, (err, result)=> {
-     if(err) return console.log(err)
-     console.log("SALVOU COM SUCESSO NO NOSSO BANCO DE DADOS")
-     res.redirect("/show")
-     collection.find().toArray((err, results) =>{
-         console.log(results)
-     })
+app.post('/show',(req, res)=>{
+   db.collection('crud').insertOne(req.body,(err,result)=>{
+    if(err) return console.log(err)
+    console.log("salvou no banco de dados mongodb")
+    res.redirect('/show')
+    db.collection('crud').find().toArray((err,results)=>{
+        console.log(results)
     })
- })
- 
+   })
+})
 
 //renderizar e retornar o conteúdo do nosso banco
 app.get('/', (req, res) => {
@@ -78,3 +72,15 @@ app.route('/edit/:id')
 
     })
 })
+ app.route('/delete/:id')
+ .get((req,res)=>{
+    var id= req.params.id
+    db.collection('crud').deleteOne({_id: ObjectId(id)}, (err, result)=>{
+        if(err) return res.send(500,err)
+        console.log('Deletando do nosso banco de dados!')
+        res.redirect('/show')
+    })
+ })
+
+
+
